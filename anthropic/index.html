@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hamza Shaikh — For Anthropic / AI Engineer</title>
+<meta name="description" content="An application for an AI Engineer role at Anthropic. By Hamza Shaikh — 6 years of shipping LLM systems in production at ComplyStream, Diverge, and O2H Technology." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --ink-mid: #444;
+    --ink-muted: #888;
+    --ink-faint: #bbb;
+    --surface: #f7f6f3;
+    --white: #ffffff;
+    --accent: #0052cc;
+    --accent-light: #e8f0ff;
+    --rule: #e0ddd7;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+  .nav-id {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-mid);
+    letter-spacing: 0.01em;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-decoration: none;
+    color: var(--ink-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* LAYOUT */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 5rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  /* HERO */
+  .hero {
+    padding: 6rem 0 5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2.5rem;
+  }
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 300;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.75rem;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--ink-mid);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+  .hero-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .meta-block {}
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .meta-value {
+    font-size: 14px;
+    color: var(--ink-mid);
+  }
+
+  /* SECTION HEADERS */
+  .section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  .eyebrow-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+  .eyebrow-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  h2 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  /* LETTER */
+  .letter-body {
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--ink-mid);
+    max-width: 640px;
+  }
+  .letter-body p + p { margin-top: 1.2rem; }
+  .letter-sig {
+    margin-top: 2.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .letter-sig em { color: var(--accent); font-style: normal; }
+
+  /* PROBLEMS */
+  .problem {
+    margin-bottom: 3.5rem;
+    padding-bottom: 3.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .problem:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .problem-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .problem-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    padding-top: 6px;
+    flex-shrink: 0;
+    width: 28px;
+  }
+  .problem-title-block {}
+  .problem-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .problem-body {
+    padding-left: calc(28px + 1.5rem);
+  }
+  .problem-body p {
+    font-size: 0.975rem;
+    color: var(--ink-mid);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+  .problem-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .steps li {
+    font-size: 0.9rem;
+    color: var(--ink-mid);
+    padding-left: 1.25rem;
+    position: relative;
+    font-weight: 300;
+  }
+  .steps li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+  .proof-bar {
+    margin-top: 1.5rem;
+    background: var(--surface);
+    border-left: 2px solid var(--accent);
+    padding: 0.8rem 1rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .proof-bar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .proof-bar p {
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    margin: 0;
+    font-weight: 300;
+  }
+
+  /* WORK */
+  .work-grid {
+    display: grid;
+    gap: 2px;
+  }
+  .work-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .work-item:first-child { padding-top: 0; }
+  .work-item:last-child { border-bottom: none; }
+  .work-meta {}
+  .work-co {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .work-period {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+  .work-content {}
+  .work-role {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    font-family: var(--mono);
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .work-desc {
+    font-size: 0.9rem;
+    color: var(--ink-mid);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+  .work-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .stat {
+    text-align: left;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+
+  /* 90 DAYS */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .phase {
+    background: var(--white);
+    padding: 1.5rem;
+  }
+  .phase-range {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .phase-name {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+  .phase-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .phase-list li {
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    padding-left: 1rem;
+    position: relative;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .phase-list li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+  }
+  .phase-output {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .phase-output-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .phase-output p {
+    font-size: 0.8rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* PRINCIPLES */
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  .principle {}
+  .principle-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .principle-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .principle p {
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* CONTACT */
+  .contact-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 4rem;
+    flex-wrap: wrap;
+  }
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .contact-links a {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-mid);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .contact-links a:hover { color: var(--accent); }
+  .contact-links a .cl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    width: 52px;
+  }
+  .contact-note {
+    max-width: 320px;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .footer-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    nav { padding: 0 1rem; }
+    .nav-links { gap: 1rem; }
+    .container { padding: 0 1.25rem; }
+    section { padding: 3rem 0; }
+    .hero { padding: 4rem 0 3rem; }
+    .hero-meta { grid-template-columns: 1fr; }
+    .work-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    .phase-grid { grid-template-columns: 1fr; }
+    .principles { grid-template-columns: 1fr; }
+    .contact-block { gap: 2rem; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-id">H. Shaikh / for Anthropic</span>
+  <ul class="nav-links">
+    <li><a href="#letter">Letter</a></li>
+    <li><a href="#problems">Problems</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#plan">90 Days</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Application · AI Engineer · Anthropic</div>
+    <h1>Not a résumé.<br><em>A case.</em></h1>
+    <p class="hero-sub">Six years shipping LLM systems that analysts, traders, and millions of users depend on — every day. A considered argument for why I'd be useful at Anthropic, and what I'd do in my first ninety days.</p>
+    <div class="hero-meta">
+      <div class="meta-block">
+        <div class="meta-label">Filed by</div>
+        <div class="meta-value">Hamza Shaikh<br>Ahmedabad, India</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">For</div>
+        <div class="meta-value">AI Engineer<br>Anthropic</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Experience</div>
+        <div class="meta-value">6+ years, LLM systems in production</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Open to</div>
+        <div class="meta-value">Relocation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LETTER -->
+  <section id="letter">
+    <div class="section-eyebrow">
+      <span class="eyebrow-num">§ 01</span>
+      <div class="eyebrow-rule"></div>
+    </div>
+    <h2>A short <em>letter.</em></h2>
+    <div class="letter-body">
+      <p>The most consequential gap in AI right now isn't model capability — it's reliability. The distance between a model that impresses in a demo and one that holds up when a financial analyst needs to trust it at 2am, or when a compliance system has to be right, not just plausible. I've spent six years living in that gap.</p>
+      <p>At ComplyStream, I led the development of FinCrime AI agents that 200+ analysts use every day. I built the evaluation pipelines that decide whether a model is fit for production, the hallucination tracking that catches it when it isn't, and the prompt versioning system that makes improvements testable instead of hopeful. I've fine-tuned LLMs on domain-specific data, reduced token overhead without losing fidelity, and built APIs that sustain 99.9% uptime under real load.</p>
+      <p>I use Claude daily — for building, for reasoning through system design, for testing my own assumptions. I know where it's sharp and where the seams are still visible. The three problems below are the ones I'd be most motivated to work on. Not because they're easy, but because I've already encountered the shape of each one in production, and I think I know which approaches actually hold.</p>
+    </div>
+    <div class="letter-sig">— Hamza Shaikh &nbsp;<em>·</em>&nbsp; hamzashaikhm123@gmail.com</div>
+  </section>
+
+  <!-- PROBLEMS -->
+  <section id="problems">
+    <div class="section-eyebrow">
+      <span class="eyebrow-num">§ 02</span>
+      <div class="eyebrow-rule"></div>
+    </div>
+    <h2>Three problems I'd <em>work on.</em></h2>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-num">01</span>
+        <div class="problem-title-block">
+          <div class="problem-tag">Hallucination &amp; Reliability</div>
+          <h3>LLM hallucination is still caught by users, not systems.</h3>
+        </div>
+      </div>
+      <div class="problem-body">
+        <p>Most evaluation pipelines check correctness at launch. In production, the model drifts — domain distribution shifts, prompts evolve, edge cases accumulate. The current state asks users to be the hallucination detector, which is exactly who shouldn't be. I've built the continuous alternative: automated evaluation pipelines that track faithfulness, relevancy, and grounding on every deploy, not just before it.</p>
+        <div class="problem-label">Approach</div>
+        <ul class="steps">
+          <li>Instrument live Claude interactions with lightweight faithfulness scoring, sampled continuously.</li>
+          <li>Build a drift detection layer that surfaces when a model's failure profile changes, not just when it's wrong on known evals.</li>
+          <li>Design a feedback loop from flagged outputs back into the eval set — evals grow with the product, not behind it.</li>
+        </ul>
+        <div class="proof-bar">
+          <div class="proof-bar-label">Why I can say this</div>
+          <p>Built production hallucination tracking for ComplyStream's FinCrime platform — real-time detection across 200+ analysts' workflows. Integrated into CI/CD as a deployment gate. Reduced false-positive compliance flags by 40%.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-num">02</span>
+        <div class="problem-title-block">
+          <div class="problem-tag">Agentic Systems</div>
+          <h3>Agents scale their mistakes as readily as their output.</h3>
+        </div>
+      </div>
+      <div class="problem-body">
+        <p>When an agent acts on bad intermediate output, subsequent steps build on that error — silently, confidently, at speed. Claude Code and Computer Use are powerful, but the failure mode I keep noticing is the same one I've had to engineer around in autonomous agent systems: the absence of a self-correction layer. An agent should know when it's off-track before the user does.</p>
+        <div class="problem-label">Approach</div>
+        <ul class="steps">
+          <li>Add lightweight post-action verification: every consequential tool call has a condition it should satisfy — the agent checks it, not the user.</li>
+          <li>Build structured recovery paths for the most common failure types (tool returns unexpected schema, action has no observable effect, output contradicts prior state).</li>
+          <li>Instrument agent traces so failure points are visible, not buried in logs — a prerequisite for improving them.</li>
+        </ul>
+        <div class="proof-bar">
+          <div class="proof-bar-label">Why I can say this</div>
+          <p>Architected multi-agent FinCrime systems at ComplyStream — agentic orchestration over financial records with 3x workflow efficiency improvement. Self-verification was the hardest part; it's also the part that made everything else trustable.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-num">03</span>
+        <div class="problem-title-block">
+          <div class="problem-tag">Infrastructure Cost &amp; Scale</div>
+          <h3>Token cost shapes who can afford to build on Claude.</h3>
+        </div>
+      </div>
+      <div class="problem-body">
+        <p>Inference cost is a product decision, not just an engineering one. At ComplyStream, I reduced token overhead by 30% without degrading model output quality — using structured serialization, prompt compression, and caching strategies that preserved semantic content. The teams building on top of Claude's API face this problem at every design decision. Making it easier to be efficient without sacrificing capability is work worth doing at the platform level.</p>
+        <div class="problem-label">Approach</div>
+        <ul class="steps">
+          <li>Document and systematize the token-efficiency techniques that work in production — not theoretical, tested against real workloads.</li>
+          <li>Build tooling that helps developers profile their prompt token consumption and identify reduction opportunities.</li>
+          <li>Design a reference architecture for high-frequency LLM API usage that integrates cost controls without requiring every team to rediscover the same optimizations.</li>
+        </ul>
+        <div class="proof-bar">
+          <div class="proof-bar-label">Why I can say this</div>
+          <p>Achieved 30% token reduction on ComplyStream's AWS Bedrock workload using BSON serialization, prompt engineering, and response caching. Also cut API latency by 50% and infrastructure costs by 50% at Diverge — same problem, different stack.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section id="work">
+    <div class="section-eyebrow">
+      <span class="eyebrow-num">§ 03</span>
+      <div class="eyebrow-rule"></div>
+    </div>
+    <h2>Things I've already <em>shipped.</em></h2>
+
+    <div class="work-grid">
+      <div class="work-item">
+        <div class="work-meta">
+          <div class="work-co">ComplyStream</div>
+          <div class="work-period">Dec 2024 – Feb 2026</div>
+        </div>
+        <div class="work-content">
+          <div class="work-role">Founding AI Engineer</div>
+          <p class="work-desc">Designed enterprise LLM applications on AWS Bedrock for financial crime detection. Led development of multi-agent compliance systems serving 200+ analysts. Built the evaluation pipeline that decides what gets to production — hallucination tracking, prompt versioning, automated quality gates.</p>
+          <div class="work-stats">
+            <div class="stat"><div class="stat-num">50%</div><div class="stat-label">Cost reduction</div></div>
+            <div class="stat"><div class="stat-num">3×</div><div class="stat-label">Workflow efficiency</div></div>
+            <div class="stat"><div class="stat-num">40%</div><div class="stat-label">Accuracy improvement</div></div>
+            <div class="stat"><div class="stat-num">99.9%</div><div class="stat-label">API uptime</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-meta">
+          <div class="work-co">Diverge</div>
+          <div class="work-period">Sep 2023 – Feb 2024</div>
+        </div>
+        <div class="work-content">
+          <div class="work-role">AI Engineer</div>
+          <p class="work-desc">Built sentiment-based GenAI chat module from zero for a platform with 10k+ monthly active users. End-to-end ownership: model selection, fine-tuning across 15+ LLM variants, prompt engineering, API design, deployment, and optimisation.</p>
+          <div class="work-stats">
+            <div class="stat"><div class="stat-num">92%</div><div class="stat-label">Sentiment accuracy</div></div>
+            <div class="stat"><div class="stat-num">50%</div><div class="stat-label">Latency reduction</div></div>
+            <div class="stat"><div class="stat-num">30%</div><div class="stat-label">Infrastructure savings</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-meta">
+          <div class="work-co">O2H Technology</div>
+          <div class="work-period">Jan 2020 – Dec 2021</div>
+        </div>
+        <div class="work-content">
+          <div class="work-role">AI Engineer</div>
+          <p class="work-desc">Managed three end-to-end ML projects serving 50k+ users. Built NLP sentiment analysis, recommendation modules, and automated ETL pipelines. 90% classification accuracy across systems. Reduced manual data processing time by 70% through intelligent workflow automation.</p>
+          <div class="work-stats">
+            <div class="stat"><div class="stat-num">50k+</div><div class="stat-label">Users served</div></div>
+            <div class="stat"><div class="stat-num">90%</div><div class="stat-label">Model accuracy</div></div>
+            <div class="stat"><div class="stat-num">70%</div><div class="stat-label">Automation lift</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-meta">
+          <div class="work-co">ApexGPT</div>
+          <div class="work-period">Side project · Live</div>
+        </div>
+        <div class="work-content">
+          <div class="work-role">Builder</div>
+          <p class="work-desc">AI-powered developer tool built into ApexCharts, serving 10k+ monthly users. Available at <a href="https://apexcharts.com/apexgpt/" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">apexcharts.com/apexgpt</a> — a practical example of embedding LLM capability into an existing developer workflow without friction.</p>
+          <div class="work-stats">
+            <div class="stat"><div class="stat-num">10k+</div><div class="stat-label">Monthly users</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 90 DAYS -->
+  <section id="plan">
+    <div class="section-eyebrow">
+      <span class="eyebrow-num">§ 04</span>
+      <div class="eyebrow-rule"></div>
+    </div>
+    <h2>The first <em>ninety days.</em></h2>
+    <div class="phase-grid">
+      <div class="phase">
+        <div class="phase-range">01 – 30</div>
+        <div class="phase-name">Listen &amp; Map</div>
+        <ul class="phase-list">
+          <li>Sit with teams owning the surfaces I'd touch — applied AI, safety, infra, product</li>
+          <li>Read post-mortems, eval reports, and recent escalations</li>
+          <li>Use Claude products deliberately and badly — find my own friction</li>
+          <li>Talk to enterprise users; understand where the trust breaks</li>
+        </ul>
+        <div class="phase-output">
+          <div class="phase-output-label">Output, day 30</div>
+          <p>A current-state memo: the system as it actually is, the seams worth investing in, and the questions I can't yet answer.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-range">31 – 60</div>
+        <div class="phase-name">Prototype &amp; Test</div>
+        <ul class="phase-list">
+          <li>Pick the two highest-leverage threads from the map</li>
+          <li>Build the smallest thing that lets us test whether the bet is real</li>
+          <li>Run both against production traces, not synthetic data</li>
+          <li>Write the eval before claiming the result</li>
+        </ul>
+        <div class="phase-output">
+          <div class="phase-output-label">Output, day 60</div>
+          <p>Two working prototypes. Written recommendation on which to invest in. A sober list of what has to be true for it to ship.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-range">61 – 90</div>
+        <div class="phase-name">Ship &amp; Systematize</div>
+        <ul class="phase-list">
+          <li>Drive one prototype through review, eval, and measured rollout</li>
+          <li>Write the reference architecture for the pattern it uses</li>
+          <li>Pair with the owning team — make the handoff real</li>
+          <li>Propose next quarter's bets with the cost of being wrong stated upfront</li>
+        </ul>
+        <div class="phase-output">
+          <div class="phase-output-label">Output, day 90</div>
+          <p>One shipped change with measurable impact. One written pattern that outlives me. One opinionated proposal for what's next.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-num">i.</div>
+        <div class="principle-title">Evals before claims.</div>
+        <p>If I can't measure the improvement, I haven't made one. The eval comes first — or there's no feature, just a belief.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">ii.</div>
+        <div class="principle-title">Production is the test.</div>
+        <p>Benchmarks on synthetic data are a start. The real question is what happens when actual users, with actual stakes, use the system in ways you didn't anticipate.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">iii.</div>
+        <div class="principle-title">Smallest reversible step.</div>
+        <p>The architecture tempts you toward the big swing. Most of the leverage is in ten small, defensible moves shipped quickly and measured honestly.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">iv.</div>
+        <div class="principle-title">Precision is honesty.</div>
+        <p>I say what I built, what the team built, and what I'd do differently. Vagueness about ownership compounds into vagueness about everything else.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-eyebrow">
+      <span class="eyebrow-num">§ 05</span>
+      <div class="eyebrow-rule"></div>
+    </div>
+    <h2>Get in <em>touch.</em></h2>
+    <div class="contact-block">
+      <div class="contact-links">
+        <a href="mailto:hamzashaikhm123@gmail.com"><span class="cl">Email</span> hamzashaikhm123@gmail.com</a>
+        <a href="tel:+919537168927"><span class="cl">Phone</span> +91 95371 68927</a>
+        <a href="https://linkedin.com/in/hamza-shaikh-7386a1189" target="_blank" rel="noopener"><span class="cl">LinkedIn</span> hamza-shaikh-7386a1189</a>
+        <a href="https://github.com/HamzaShaikh17" target="_blank" rel="noopener"><span class="cl">GitHub</span> HamzaShaikh17</a>
+        <a href="https://apexcharts.com/apexgpt/" target="_blank" rel="noopener"><span class="cl">Project</span> ApexGPT — live</a>
+      </div>
+      <p class="contact-note">If any of this lands, I'd welcome even a short conversation about which of these problems you actually have — and which ones are already being worked on in ways I haven't seen yet.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span class="footer-copy">© 2026 Hamza Shaikh · Ahmedabad, India</span>
+  <span class="footer-type">Set in IBM Plex Sans &amp; IBM Plex Mono · Hand-written, hand-coded</span>
+</footer>
+
+</body>
+</html>
