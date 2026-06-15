@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hamza Shaikh — Resume</title>
+<meta name="description" content="Resume of Hamza Shaikh — AI Engineer with 6+ years building enterprise LLM systems." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --ink-mid: #3a3a3a;
+    --ink-muted: #777;
+    --ink-faint: #aaa;
+    --surface: #f7f6f3;
+    --white: #ffffff;
+    --accent: #0052cc;
+    --rule: #e0ddd7;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.93);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+  }
+  .nav-id {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mid);
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-decoration: none;
+    color: var(--ink-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-dl {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-dl:hover { background: var(--accent); color: #fff; }
+
+  /* LAYOUT */
+  .page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  /* HEADER */
+  .resume-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: end;
+    padding-bottom: 2.5rem;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 2.5rem;
+  }
+  .header-name {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .header-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header-contact {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .header-contact a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    text-decoration: none;
+  }
+  .header-contact a:hover { color: var(--accent); }
+
+  /* SECTION */
+  .section { margin-bottom: 2.5rem; }
+  .section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  /* SUMMARY */
+  .summary {
+    font-size: 0.95rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.75;
+    max-width: 680px;
+  }
+
+  /* SKILLS */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px 1rem;
+    font-size: 0.875rem;
+  }
+  .skill-cat {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    padding-top: 2px;
+  }
+  .skill-list {
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* EXPERIENCE */
+  .job { margin-bottom: 2rem; }
+  .job:last-child { margin-bottom: 0; }
+  .job-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2px;
+  }
+  .job-co {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .job-period {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .job-role {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .job-summary {
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .job-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .job-bullets li {
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.6;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .job-bullets li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+  }
+  .job-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 5px 10px;
+    border-radius: 3px;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-top: 1px;
+  }
+
+  /* PROJECTS */
+  .project { margin-bottom: 1.5rem; }
+  .project:last-child { margin-bottom: 0; }
+  .project-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .project-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .project-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .project-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    margin-left: auto;
+  }
+  .project-link:hover { color: var(--accent); }
+  .project-desc {
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .project-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .project-bullets li {
+    font-size: 0.825rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.6;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .project-bullets li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+  }
+
+  /* EDUCATION */
+  .edu {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .edu-inst {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .edu-degree {
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+  }
+  .edu-period {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    padding-top: 3px;
+  }
+
+  /* DIVIDER */
+  .job-divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 1.5rem 0;
+  }
+
+  /* PRINT */
+  @media print {
+    nav { display: none; }
+    body { font-size: 11pt; }
+    .page { padding: 1.5rem; }
+    .header-name { font-size: 2rem; }
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .page { padding: 2rem 1.25rem 4rem; }
+    .resume-header { grid-template-columns: 1fr; }
+    .header-contact { text-align: left; }
+    .job-header { grid-template-columns: 1fr; }
+    .job-period { margin-top: -4px; }
+    .edu { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .skill-cat { margin-top: 8px; }
+    .skill-cat:first-child { margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-id">hamzashaikh.dev / resume</span>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#education">Education</a></li>
+    </ul>
+    <a class="nav-dl" href="mailto:hamzashaikhm123@gmail.com">Contact ↗</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="resume-header">
+    <div>
+      <h1 class="header-name">Hamza Shaikh</h1>
+      <div class="header-title">AI Engineer · 6+ Years · LLM Systems in Production</div>
+    </div>
+    <div class="header-contact">
+      <a href="mailto:hamzashaikhm123@gmail.com">hamzashaikhm123@gmail.com</a>
+      <a href="tel:+919537168927">+91 95371 68927</a>
+      <a href="https://linkedin.com/in/hamza-shaikh-7386a1189" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a href="https://github.com/HamzaShaikh17" target="_blank" rel="noopener">GitHub ↗</a>
+      <span style="font-family: var(--mono); font-size: 11px; color: var(--ink-faint);">Ahmedabad, India</span>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <p class="summary">AI Engineer with 6+ years of experience developing enterprise-grade LLM applications, ML models, and automation solutions across financial compliance, sentiment analysis, and chemical research domains. Proficient in Python, TensorFlow, PyTorch, LangChain, FastAPI, and AWS.</p>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="section">
+    <div class="section-title">Technical Skills</div>
+    <div class="skills-grid">
+      <span class="skill-cat">Languages</span>
+      <span class="skill-list">Python, FastAPI, Next.js</span>
+
+      <span class="skill-cat">ML Frameworks</span>
+      <span class="skill-list">TensorFlow, PyTorch, LangChain, Transformers</span>
+
+      <span class="skill-cat">Cloud & Infra</span>
+      <span class="skill-list">AWS (Bedrock, Lambda, S3, EC2), Docker, Git, MongoDB</span>
+
+      <span class="skill-cat">AI / ML</span>
+      <span class="skill-list">Agentic AI, GenAI, LLM Fine-tuning, Prompt Engineering, Quantization, NLP, Recommendation Systems</span>
+    </div>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div class="section" id="experience">
+    <div class="section-title">Professional Experience</div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-co">ComplyStream</span>
+        <span class="job-period">Dec 2024 – Feb 2026 · Remote</span>
+      </div>
+      <div class="job-role">Founding AI Engineer</div>
+      <p class="job-summary">Designed enterprise-grade LLM applications using AWS Bedrock, LangChain, and Transformers. Led development of FinCrime AI agents serving 200+ analysts, improving workflow efficiency by 3× and response accuracy by 40%.</p>
+      <ul class="job-bullets">
+        <li>Built production-grade APIs integrating prompt versioning, monitoring, and automated evaluation pipelines for LLM hallucination tracking; processed a high volume of daily requests.</li>
+        <li>Engineered serverless architectures with AWS Lambda, S3, and EC2 to serve domain-specific models; achieved 30% token reduction using BSON, prompt engineering, and other techniques.</li>
+        <li>Implemented custom prompt engineering and fine-tuned LLMs on 10k+ domain-specific examples; increased model accuracy from 65% to 75% for financial compliance tasks.</li>
+      </ul>
+      <div class="job-stats">
+        <div class="stat"><div class="stat-num">50%</div><div class="stat-label">Cost reduction</div></div>
+        <div class="stat"><div class="stat-num">3×</div><div class="stat-label">Workflow efficiency</div></div>
+        <div class="stat"><div class="stat-num">40%</div><div class="stat-label">Accuracy improvement</div></div>
+        <div class="stat"><div class="stat-num">99.9%</div><div class="stat-label">API uptime</div></div>
+      </div>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-co">Diverge</span>
+        <span class="job-period">Sep 2023 – Feb 2024 · Remote</span>
+      </div>
+      <div class="job-role">AI Engineer</div>
+      <p class="job-summary">Developed a sentiment-based GenAI chatting module from inception for a platform with 10k+ monthly active users. Led end-to-end implementation including API design, deployment, and model optimization.</p>
+      <ul class="job-bullets">
+        <li>Executed model selection, fine-tuning, and prompt engineering across 15+ LLM variants; achieved 92% sentiment classification accuracy and reduced response time by 40%.</li>
+        <li>Implemented comprehensive code optimization strategies, resulting in 50% reduction in API latency and 30% decrease in cloud infrastructure costs.</li>
+      </ul>
+      <div class="job-stats">
+        <div class="stat"><div class="stat-num">92%</div><div class="stat-label">Sentiment accuracy</div></div>
+        <div class="stat"><div class="stat-num">50%</div><div class="stat-label">Latency reduction</div></div>
+        <div class="stat"><div class="stat-num">30%</div><div class="stat-label">Infra savings</div></div>
+      </div>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-co">NetworthCorp</span>
+        <span class="job-period">Jan 2022 – Jun 2022 · Remote</span>
+      </div>
+      <div class="job-role">Data Scientist</div>
+      <p class="job-summary">Developed ML-based route prediction system for chemistry research, helping scientists optimize molecular synthesis pathways. Executed data analysis using Python, Power BI, and statistical methods.</p>
+      <ul class="job-bullets">
+        <li>Reduced chemical synthesis iterations by 3–4 cycles on average, decreasing chemical waste by 15–20% and saving material costs annually.</li>
+        <li>Built predictive models to minimize synthesis routes, reducing time and resource consumption by 25% across 100+ research projects.</li>
+      </ul>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-co">O2H Technology</span>
+        <span class="job-period">Jan 2020 – Dec 2021 · Ahmedabad</span>
+      </div>
+      <div class="job-role">AI Engineer</div>
+      <p class="job-summary">Managed three end-to-end ML projects serving 50k+ users. Engineered custom algorithms achieving 90% accuracy across classification, NLP, and recommendation modules.</p>
+      <ul class="job-bullets">
+        <li>Spearheaded automation of data scraping and ETL pipelines; optimized team productivity by 60% through intelligent workflow automation.</li>
+        <li>Developed NLP-based sentiment analysis system categorising user posts by company values with 85% accuracy using RNN and encoding-decoding algorithms.</li>
+      </ul>
+      <div class="job-stats">
+        <div class="stat"><div class="stat-num">50k+</div><div class="stat-label">Users served</div></div>
+        <div class="stat"><div class="stat-num">90%</div><div class="stat-label">Model accuracy</div></div>
+        <div class="stat"><div class="stat-num">70%</div><div class="stat-label">Processing time saved</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="section" id="projects">
+    <div class="section-title">Key Projects</div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">FinCrime Agents</span>
+        <span class="project-tag">Agentic AI · Production</span>
+      </div>
+      <p class="project-desc">Automated compliance analysis platform serving 200+ financial analysts. Agents autonomously process regulatory documents, cross-reference entities, and flag anomalies — reducing manual review load significantly.</p>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">AI Email Application</span>
+        <span class="project-tag">On-Device LLM · In Progress</span>
+        <a class="project-link" href="https://ai-email-client-two.vercel.app/" target="_blank" rel="noopener">ai-email-client-two.vercel.app ↗</a>
+      </div>
+      <p class="project-desc">Full-stack AI email client built with Next.js and Flutter. Runs an on-device Qwen 0.5B language model with 9× size reduction through quantization — deployable on budget mobile hardware with zero server inference cost.</p>
+      <ul class="project-bullets">
+        <li>Integrated multiple email providers with a unified inbox interface, offline-first synchronisation, and privacy-preserving architecture.</li>
+        <li>Reduced infrastructure costs significantly while maintaining enterprise-grade security and data protection standards.</li>
+      </ul>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">AISEO Content Platform</span>
+        <span class="project-tag">Agentic Pipeline · In Progress</span>
+      </div>
+      <p class="project-desc">End-to-end AI content platform built around a Company → Campaign → Posts hierarchy. Posts are generated through a 6-stage agentic pipeline — keyword research, SERP analysis, drafting, editing, SEO scoring, publish — then distributed across blog, LinkedIn, Medium, and X with time-series performance tracking.</p>
+      <ul class="project-bullets">
+        <li>Core data model: User → Company → Campaign → Post, each linked to a generation job, publish record, and metrics for roll-up campaign reporting.</li>
+        <li>Designed platform APIs, OAuth integrations for real publishing, and a mock-analytics mode enabling full end-to-end demos with zero external dependencies.</li>
+      </ul>
+    </div>
+
+    <div class="job-divider"></div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">ApexGPT</span>
+        <span class="project-tag">Developer Tool · Live</span>
+        <a class="project-link" href="https://apexcharts.com/apexgpt/" target="_blank" rel="noopener">apexcharts.com/apexgpt ↗</a>
+      </div>
+      <p class="project-desc">AI-powered developer assistant embedded in ApexCharts, serving 10k+ monthly users. Helps developers configure charts using natural language — a practical example of integrating LLM capability into an existing developer workflow.</p>
+    </div>
+  </div>
+
+  <!-- EDUCATION -->
+  <div class="section" id="education">
+    <div class="section-title">Education</div>
+    <div class="edu">
+      <div>
+        <div class="edu-inst">Gujarat Technological University</div>
+        <div class="edu-degree">Bachelor of Engineering — Computer Engineering</div>
+      </div>
+      <span class="edu-period">2016 – 2020 · Gujarat, India</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
