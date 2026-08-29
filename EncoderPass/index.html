@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside one encoder pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>
+<style>
+:root{
+  --bg:#F7F6F2; --panel:#FFFFFF; --ink:#1B1B18; --ink-soft:#5B5A54; --ink-faint:#94938B;
+  --line:#DEDCD3; --line-strong:#C7C5B9;
+  --accent:#0F6E56; --accent-soft:#DCEFE7;
+  --clay:#A3401F; --clay-soft:#F5E2D9;
+  --radius:10px;
+  --serif:'Newsreader', Georgia, serif;
+  --sans:'Inter', -apple-system, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); line-height:1.55;}
+.wrap{max-width:1080px; margin:0 auto; padding:44px 20px 80px;}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.06em; color:var(--accent); text-transform:uppercase; margin:0 0 12px;}
+h1{font-family:var(--serif); font-weight:600; font-style:italic; font-size:clamp(28px,4.5vw,42px); margin:0 0 14px; max-width:18ch;}
+p.sub{color:var(--ink-soft); font-size:15px; max-width:70ch; margin:0 0 8px;}
+.sentence-row{display:flex; gap:8px; align-items:center; margin-top:18px; flex-wrap:wrap;}
+.tok{font-family:var(--mono); font-size:14px; padding:5px 11px; border-radius:6px; background:var(--accent-soft); border:1px solid var(--accent); color:var(--accent);}
+
+/* sankey */
+.sankey-card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; margin-top:32px;}
+.sankey-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:2px;}
+.sankey-head h2{font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); margin:0; font-weight:500;}
+.sankey-hint{font-size:12px; color:var(--ink-faint); font-style:italic;}
+#sankey-container{width:100%; overflow-x:auto;}
+#sankey-container svg{cursor:default; display:block; margin:0 auto;}
+#sankey-container rect{cursor:pointer; transition:opacity .15s;}
+#sankey-container rect:hover{opacity:0.85;}
+.sankey-axis-note{font-size:11px; color:var(--ink-faint); text-align:center; margin-top:6px;}
+
+/* stepper */
+.stepper{display:flex; align-items:center; gap:14px; margin-top:26px; flex-wrap:wrap;}
+.stepper button{
+  font-family:var(--mono); font-size:13px; padding:9px 16px; border-radius:8px; border:1px solid var(--line-strong);
+  background:var(--panel); color:var(--ink); cursor:pointer;
+}
+.stepper button:hover:not(:disabled){border-color:var(--accent); color:var(--accent);}
+.stepper button:disabled{opacity:.35; cursor:default;}
+#playBtn{background:var(--ink); color:#fff; border-color:var(--ink);}
+#playBtn:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
+.dots{display:flex; gap:5px; flex-wrap:wrap;}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--line-strong); cursor:pointer; border:none; padding:0;}
+.dot.active{background:var(--accent); width:20px; border-radius:4px;}
+
+.stage-card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; margin-top:20px;}
+.stage-kicker{font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em;}
+.stage-title{font-family:var(--serif); font-weight:600; font-size:22px; margin:4px 0 10px;}
+.stage-formula{font-family:var(--mono); font-size:14px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 14px; display:inline-block;}
+.stage-note{font-size:13.5px; color:var(--ink-soft); margin-top:12px; max-width:72ch;}
+
+.matrices{display:flex; gap:26px; flex-wrap:wrap; margin-top:22px; align-items:flex-start;}
+.matrix-block{}
+.matrix-label{font-family:var(--mono); font-size:12px; color:var(--ink); font-weight:600; margin-bottom:2px;}
+.matrix-shape{font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-bottom:8px;}
+.mtable{border-collapse:collapse;}
+.mtable td{
+  font-family:var(--mono); font-size:12.5px; text-align:center; padding:7px 10px;
+  border:1px solid var(--line); min-width:42px; color:var(--ink); cursor:default;
+}
+.mtable td.headcell{
+  color:var(--ink-faint); font-size:10.5px; border:none; padding:4px 8px; font-weight:600;
+}
+.mtable td.rowlabel{
+  color:var(--ink-soft); font-size:11px; border:none; padding:4px 10px 4px 0; text-align:right; font-weight:600;
+}
+.mtable td.corner{border:none;}
+.mtable td[data-num]:hover{outline:2px solid var(--ink); outline-offset:-2px;}
+
+/* legend */
+.legend{display:flex; align-items:center; gap:10px; margin-top:18px; font-family:var(--mono); font-size:11px; color:var(--ink-faint);}
+.legend-bar{width:120px; height:10px; border-radius:5px; background:linear-gradient(to right, var(--clay), #fff, var(--accent)); border:1px solid var(--line);}
+
+footer{max-width:1080px; margin:50px auto 0; padding:0 20px; color:var(--ink-faint); font-size:12px; border-top:1px solid var(--line); padding-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">A single encoder layer, computed live</p>
+  <h1>Inside one encoder pass</h1>
+  <p class="sub">A 4-token sentence runs through one full encoder block — real matrix multiplication at every stage, using small fixed random weights so the numbers stay readable. The diagram is the actual computation graph, residual connections included. Click any box in it, drag the stepper, or hit play.</p>
+  <div class="sentence-row" id="sentenceRow"></div>
+
+  <div class="sankey-card">
+    <div class="sankey-head">
+      <h2>Layer graph</h2>
+      <span class="sankey-hint">hover a box or arrow to preview it · click a box to jump there</span>
+    </div>
+    <div id="sankey-container"></div>
+    <p class="sankey-axis-note">flows left → right · scroll to see the full width · Q / K / V run in parallel from the same input</p>
+  </div>
+
+  <div class="stepper">
+    <button id="prevBtn">← prev</button>
+    <button id="playBtn">▶ play</button>
+    <button id="nextBtn">next →</button>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="stage-card">
+    <div class="stage-kicker" id="stageKicker"></div>
+    <div class="stage-title" id="stageTitle"></div>
+    <div class="stage-formula" id="stageFormula"></div>
+    <div class="matrices" id="matrices"></div>
+    <div class="legend">
+      <span>−</span><div class="legend-bar"></div><span>+</span>
+      <span style="margin-left:6px;">cell shade = sign &amp; size of the value · hover any cell for the exact number</span>
+    </div>
+    <p class="stage-note" id="stageNote"></p>
+  </div>
+</div>
+
+<footer>
+  Single head, d_model = 4, d_ff = 8, weights are fixed pseudo-random values (not trained) chosen only so the arithmetic is visible. Real models use many heads, hundreds to thousands of dimensions, and learned weights — the shape of the computation is identical.
+</footer>
+
+<script>
+// ---------- deterministic RNG ----------
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(20260829);
+function randVal(scale=1){ return (rng()*2-1)*scale; }
+function randMat(rows, cols, scale=1){
+  const m = [];
+  for(let r=0;r<rows;r++){ const row=[]; for(let c=0;c<cols;c++) row.push(randVal(scale)); m.push(row); }
+  return m;
+}
+function randVec(n, scale=1){ return Array.from({length:n}, ()=>randVal(scale)); }
+
+// ---------- matrix ops ----------
+function matmul(A,B){
+  const r=A.length, k=A[0].length, c=B[0].length;
+  const out = Array.from({length:r},()=>Array(c).fill(0));
+  for(let i=0;i<r;i++) for(let j=0;j<c;j++){ let s=0; for(let x=0;x<k;x++) s+=A[i][x]*B[x][j]; out[i][j]=s; }
+  return out;
+}
+function transpose(A){ return A[0].map((_,c)=>A.map(row=>row[c])); }
+function addMat(A,B){ return A.map((row,i)=>row.map((v,j)=>v+B[i][j])); }
+function scaleMat(A,s){ return A.map(row=>row.map(v=>v*s)); }
+function addBiasRows(A,b){ return A.map(row=>row.map((v,j)=>v+b[j])); }
+function reluMat(A){ return A.map(row=>row.map(v=>Math.max(0,v))); }
+function softmaxRows(A){
+  return A.map(row=>{
+    const max = Math.max(...row);
+    const exps = row.map(v=>Math.exp(v-max));
+    const sum = exps.reduce((a,b)=>a+b,0);
+    return exps.map(e=>e/sum);
+  });
+}
+function layerNormRows(A, eps=1e-5){
+  return A.map(row=>{
+    const mean = row.reduce((a,b)=>a+b,0)/row.length;
+    const variance = row.reduce((a,b)=>a+(b-mean)*(b-mean),0)/row.length;
+    return row.map(v=>(v-mean)/Math.sqrt(variance+eps));
+  });
+}
+function sinusoidalPE(seqLen, d){
+  const P = Array.from({length:seqLen},()=>Array(d).fill(0));
+  for(let pos=0; pos<seqLen; pos++){
+    for(let i=0; i<d; i+=2){
+      const denom = Math.pow(10000, i/d);
+      P[pos][i] = Math.sin(pos/denom);
+      if(i+1<d) P[pos][i+1] = Math.cos(pos/denom);
+    }
+  }
+  return P;
+}
+
+// ---------- build the pass ----------
+const TOKENS = ['the','cat','sat','down'];
+const D = 4, DFF = 8, N = TOKENS.length;
+const DIM4 = ['d₀','d₁','d₂','d₃'];
+const DIM8 = ['h₀','h₁','h₂','h₃','h₄','h₅','h₆','h₇'];
+
+const EMB = randMat(N, D, 0.8);
+const Wq = randMat(D, D, 0.6), Wk = randMat(D, D, 0.6), Wv = randMat(D, D, 0.6);
+const W1 = randMat(D, DFF, 0.5), b1 = randVec(DFF, 0.2);
+const W2 = randMat(DFF, D, 0.5), b2 = randVec(D, 0.2);
+const POS = sinusoidalPE(N, D);
+
+const X1 = addMat(EMB, POS);
+const Q = matmul(X1, Wq);
+const K = matmul(X1, Wk);
+const V = matmul(X1, Wv);
+const S = scaleMat(matmul(Q, transpose(K)), 1/Math.sqrt(D));
+const A = softmaxRows(S);
+const CTX = matmul(A, V);
+const ADD1 = layerNormRows(addMat(X1, CTX));
+const HID = reluMat(addBiasRows(matmul(ADD1, W1), b1));
+const FFNOUT = addBiasRows(matmul(HID, W2), b2);
+const OUT = layerNormRows(addMat(ADD1, FFNOUT));
+
+// ---------- stages ----------
+// each matrix entry: { label, shape, data, rowLabels, colLabels }
+const STAGES = [
+  { node:'input', title:'Input tokens', formula:'tokens → token IDs', note:'The tokenizer has already split the sentence into four pieces. Nothing numeric has happened yet.',
+    matrices:[{label:'tokens', data:[TOKENS]}] },
+  { node:'tokenemb', title:'Token embedding lookup', formula:'E = Embedding[token_id]', edges:[['input','tokenemb']], note:'Each token ID indexes into a lookup table of learned vectors. These four rows are what "the", "cat", "sat", "down" look like as raw vectors, before context.',
+    matrices:[{label:'E', shape:'4 tokens × 4 dims', data:EMB, rowLabels:TOKENS, colLabels:DIM4}] },
+  { node:'posenc', title:'Add positional encoding', formula:'X = E + PositionalEncoding(pos)', edges:[['tokenemb','posenc']], note:'Attention has no built-in sense of order, so a position-dependent sinusoidal pattern is added to every row. This is the last step before the token vectors start interacting.',
+    matrices:[
+      {label:'PE', shape:'sinusoidal, by position', data:POS, rowLabels:['pos 0','pos 1','pos 2','pos 3'], colLabels:DIM4},
+      {label:'X = E + PE', shape:'4 tokens × 4 dims', data:X1, rowLabels:TOKENS, colLabels:DIM4}
+    ] },
+  { node:'q', title:'Query projection', formula:'Q = X · W_Q', edges:[['posenc','q']], note:'Every token produces a query vector: what it is looking for in the rest of the sentence.',
+    matrices:[
+      {label:'W_Q', shape:'4 in × 4 out', data:Wq, rowLabels:DIM4, colLabels:['q₀','q₁','q₂','q₃']},
+      {label:'Q', shape:'4 tokens × 4 dims', data:Q, rowLabels:TOKENS, colLabels:['q₀','q₁','q₂','q₃']}
+    ] },
+  { node:'k', title:'Key projection', formula:'K = X · W_K', edges:[['posenc','k']], note:'Every token also produces a key vector: what it offers to be matched against.',
+    matrices:[
+      {label:'W_K', shape:'4 in × 4 out', data:Wk, rowLabels:DIM4, colLabels:['k₀','k₁','k₂','k₃']},
+      {label:'K', shape:'4 tokens × 4 dims', data:K, rowLabels:TOKENS, colLabels:['k₀','k₁','k₂','k₃']}
+    ] },
+  { node:'v', title:'Value projection', formula:'V = X · W_V', edges:[['posenc','v']], note:'And a value vector: the actual content that gets passed along once attention decides it is relevant.',
+    matrices:[
+      {label:'W_V', shape:'4 in × 4 out', data:Wv, rowLabels:DIM4, colLabels:['v₀','v₁','v₂','v₃']},
+      {label:'V', shape:'4 tokens × 4 dims', data:V, rowLabels:TOKENS, colLabels:['v₀','v₁','v₂','v₃']}
+    ] },
+  { node:'scores', title:'Attention scores', formula:'S = QKᵀ / √d_k', edges:[['q','scores'],['k','scores']], note:'Every query is compared against every key with a dot product, then scaled down so the softmax in the next step doesn\'t saturate. Row = query token, column = key token.',
+    matrices:[{label:'S', shape:'query × key', data:S, rowLabels:TOKENS.map(t=>t+' →'), colLabels:TOKENS}] },
+  { node:'softmax', title:'Softmax normalization', formula:'A = softmax(S), row-wise', edges:[['scores','softmax']], note:'Each row becomes a proper probability distribution — the weights each token uses to blend in the rest of the sentence sum to 1. Read a row to see what that token is paying attention to.',
+    matrices:[{label:'A', shape:'attention weights, rows sum to 1', data:A, rowLabels:TOKENS.map(t=>t+' →'), colLabels:TOKENS}] },
+  { node:'context', title:'Weighted blend of values', formula:'Context = A · V', edges:[['softmax','context'],['v','context']], note:'Each token\'s new representation is a weighted average of every value vector, using the weights just computed.',
+    matrices:[{label:'Context', shape:'4 tokens × 4 dims', data:CTX, rowLabels:TOKENS, colLabels:DIM4}] },
+  { node:'addnorm1', title:'Residual connection + normalize', formula:'Z₁ = LayerNorm(X + Context)', edges:[['context','addnorm1'],['posenc','addnorm1']], note:'The attention output is added back to its own input (a residual connection) before normalizing. This is what lets gradients flow through very deep stacks.',
+    matrices:[{label:'Z₁', shape:'4 tokens × 4 dims, mean 0 per row', data:ADD1, rowLabels:TOKENS, colLabels:DIM4}] },
+  { node:'ffn', title:'Feed-forward network', formula:'FFN = ReLU(Z₁W₁ + b₁)W₂ + b₂', edges:[['addnorm1','ffn']], note:'A small two-layer network applied to each token independently — it briefly expands to a wider hidden dimension, then projects back down. Most of a real model\'s parameters live here.',
+    matrices:[
+      {label:'hidden', shape:'4 tokens × 8 (after ReLU)', data:HID, rowLabels:TOKENS, colLabels:DIM8},
+      {label:'FFN output', shape:'4 tokens × 4 dims', data:FFNOUT, rowLabels:TOKENS, colLabels:DIM4}
+    ] },
+  { node:'output', title:'Residual connection + normalize', formula:'Output = LayerNorm(Z₁ + FFN)', edges:[['ffn','output'],['addnorm1','output']], note:'One more residual-and-normalize, and this is the finished output of a single encoder layer — ready to be fed as the input to the next one, N times over.',
+    matrices:[{label:'Output', shape:'4 tokens × 4 dims', data:OUT, rowLabels:TOKENS, colLabels:DIM4}] },
+];
+
+// ---------- sentence chips ----------
+const sentenceRow = document.getElementById('sentenceRow');
+TOKENS.forEach(t=>{ const c=document.createElement('div'); c.className='tok'; c.textContent=t; sentenceRow.appendChild(c); });
+
+// ---------- matrix rendering ----------
+function renderMatrixTable(m){
+  const data = m.data;
+  const flat = data.flat().filter(v=>typeof v==='number');
+  const maxAbs = Math.max(1e-6, ...flat.map(v=>Math.abs(v)));
+  const table = document.createElement('table');
+  table.className = 'mtable';
+
+  if(m.colLabels){
+    const headRow = document.createElement('tr');
+    const corner = document.createElement('td');
+    corner.className = 'corner';
+    headRow.appendChild(corner);
+    m.colLabels.forEach(c=>{
+      const td = document.createElement('td');
+      td.className = 'headcell';
+      td.textContent = c;
+      headRow.appendChild(td);
+    });
+    table.appendChild(headRow);
+  }
+
+  data.forEach((row,ri)=>{
+    const tr = document.createElement('tr');
+    if(m.rowLabels){
+      const td = document.createElement('td');
+      td.className = 'rowlabel';
+      td.textContent = m.rowLabels[ri];
+      tr.appendChild(td);
+    }
+    row.forEach(v=>{
+      const td = document.createElement('td');
+      if(typeof v === 'number'){
+        td.textContent = v.toFixed(2);
+        td.title = v.toFixed(4);
+        td.setAttribute('data-num','1');
+        const t = v/maxAbs;
+        const alpha = 0.12 + Math.abs(t)*0.60;
+        td.style.background = t>=0 ? `rgba(15,110,86,${alpha})` : `rgba(163,64,31,${alpha})`;
+      } else {
+        td.textContent = v;
+        td.style.fontWeight = '600';
+      }
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+  return table;
+}
+
+// ---------- sankey ----------
+const sankeyNodes = [
+  {id:'input', title:'Input'},
+  {id:'tokenemb', title:'Token Emb'},
+  {id:'posenc', title:'+ Pos Enc'},
+  {id:'q', title:'Query'},
+  {id:'k', title:'Key'},
+  {id:'v', title:'Value'},
+  {id:'scores', title:'Scores'},
+  {id:'softmax', title:'Softmax'},
+  {id:'context', title:'Context'},
+  {id:'addnorm1', title:'Add&Norm ①'},
+  {id:'ffn', title:'Feed-Fwd'},
+  {id:'output', title:'Add&Norm ②'},
+];
+const baseEdges = [
+  ['input','tokenemb'],['tokenemb','posenc'],
+  ['posenc','q'],['posenc','k'],['posenc','v'],
+  ['q','scores'],['k','scores'],
+  ['scores','softmax'],['softmax','context'],['v','context'],
+  ['context','addnorm1'],['posenc','addnorm1'],
+  ['addnorm1','ffn'],['ffn','output'],['addnorm1','output'],
+];
+
+// human-readable note per edge, shown on hover
+const EDGE_NOTES = {
+  'input>tokenemb':'look up the token vector',
+  'tokenemb>posenc':'add the positional signal',
+  'posenc>q':'project into query space',
+  'posenc>k':'project into key space',
+  'posenc>v':'project into value space',
+  'q>scores':'compared against every key',
+  'k>scores':'compared against every query',
+  'scores>softmax':'normalized into weights',
+  'softmax>context':'weights blend the values',
+  'v>context':'blended into the context vector',
+  'context>addnorm1':'added back to its own input',
+  'posenc>addnorm1':'residual — skips the attention block',
+  'addnorm1>ffn':'fed through the feed-forward net',
+  'ffn>output':'added back to its own input',
+  'addnorm1>output':'residual — skips the feed-forward block',
+};
+
+// one axis title per rank in the auto-layered vertical flow
+const AXIS_TITLES = [
+  'Input', 'Token Embedding', '+ Positional Encoding', 'Q / K / V Projections',
+  'Attention Scores', 'Softmax', 'Context', 'Residual + Norm',
+  'Feed-Forward', 'Residual + Norm (Output)'
+];
+
+let resizeTimer = null;
+const RANKS = 10; // depth 0..9 in this fixed graph — see AXIS_TITLES
+function drawSankey(activeNode, activeEdges){
+  const activeEdgeSet = new Set((activeEdges||[]).map(e=>e.join('>')));
+  const container = document.getElementById('sankey-container');
+  container.innerHTML = '';
+
+  // Nodes are wide "cards" (not thin bars) so a label like "Add&Norm ①"
+  // fits fully inside its own column and never spills into the next one —
+  // that spill was what caused the earlier horizontal overlap.
+  const nodeWidth = 132;
+  const columnGap = 70;
+  const kx = nodeWidth + columnGap;
+  const margin = { top: 46, right: 40, bottom: 20, left: 40 };
+  const width = margin.left + margin.right + (RANKS - 1) * kx + nodeWidth;
+  const height = 560;
+
+  const nodesData = sankeyNodes.map(n => ({ ...n }));
+  const linksData = baseEdges.map(([s, t]) => ({
+    source: s, target: t,
+    value: activeEdgeSet.has(s + '>' + t) ? 10 : 1.5,
+    active: activeEdgeSet.has(s + '>' + t),
+  }));
+
+  const layout = d3.sankey()
+    .nodeId(d => d.id)
+    .nodeWidth(nodeWidth)
+    .nodePadding(36)
+    .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
+
+  const graph = layout({ nodes: nodesData, links: linksData });
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.style.display = 'block';
+
+  // one axis title per rank, as a column header above the diagram
+  const seenDepths = new Set();
+  graph.nodes.forEach(n => {
+    if (seenDepths.has(n.depth)) return;
+    seenDepths.add(n.depth);
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', (n.x0 + n.x1) / 2);
+    t.setAttribute('y', margin.top - 20);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-family', "'JetBrains Mono', monospace");
+    t.setAttribute('font-size', '10.5');
+    t.setAttribute('fill', '#94938B');
+    t.textContent = AXIS_TITLES[n.depth] || '';
+    svg.appendChild(t);
+  });
+
+  // links, drawn as hand-built horizontal ribbons
+  graph.links.forEach(link => {
+    const startX = link.source.x1, endX = link.target.x0;
+    const startY = link.y0, endY = link.y1;
+    const midX = (startX + endX) / 2;
+    const w = Math.max(link.width, 2);
+    const d = `M ${startX},${startY - w/2}
+      C ${midX},${startY - w/2} ${midX},${endY - w/2} ${endX},${endY - w/2}
+      L ${endX},${endY + w/2}
+      C ${midX},${endY + w/2} ${midX},${startY + w/2} ${startX},${startY + w/2} Z`;
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', link.active ? '#0F6E56' : '#C7C5B9');
+    path.setAttribute('fill-opacity', link.active ? '0.78' : '0.32');
+    path.style.transition = 'fill-opacity .15s';
+    path.addEventListener('mouseenter', () => path.setAttribute('fill-opacity', link.active ? '0.95' : '0.55'));
+    path.addEventListener('mouseleave', () => path.setAttribute('fill-opacity', link.active ? '0.78' : '0.32'));
+    const note = EDGE_NOTES[link.source.id + '>' + link.target.id] || '';
+    const titleEl = document.createElementNS(svgNS, 'title');
+    titleEl.textContent = `${link.source.title} → ${link.target.title} — ${note}`;
+    path.appendChild(titleEl);
+    svg.appendChild(path);
+  });
+
+  // nodes
+  graph.nodes.forEach(node => {
+    const isActive = node.id === activeNode;
+    const g = document.createElementNS(svgNS, 'g');
+    g.style.cursor = 'pointer';
+
+    const rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('x', node.x0);
+    rect.setAttribute('y', node.y0);
+    rect.setAttribute('width', node.x1 - node.x0);
+    rect.setAttribute('height', node.y1 - node.y0);
+    rect.setAttribute('rx', 6);
+    rect.setAttribute('fill', isActive ? '#0F6E56' : '#E4E1D6');
+    rect.setAttribute('stroke', '#1B1B18');
+    rect.setAttribute('stroke-width', '1');
+    g.appendChild(rect);
+
+    const label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', (node.x0 + node.x1) / 2);
+    label.setAttribute('y', (node.y0 + node.y1) / 2);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('dominant-baseline', 'central');
+    label.setAttribute('font-family', "'JetBrains Mono', monospace");
+    label.setAttribute('font-size', '12');
+    label.setAttribute('font-weight', '700');
+    label.setAttribute('fill', isActive ? '#FFFFFF' : '#1B1B18');
+    label.textContent = node.title;
+    g.appendChild(label);
+
+    const stage = STAGES.find(s => s.node === node.id);
+    const titleEl = document.createElementNS(svgNS, 'title');
+    titleEl.textContent = stage ? `${stage.title} — ${stage.formula}` : node.title;
+    g.appendChild(titleEl);
+
+    g.addEventListener('click', () => {
+      const idx = STAGES.findIndex(s => s.node === node.id);
+      if (idx >= 0) { stageIdx = idx; stopAutoplay(); render(); }
+    });
+    g.addEventListener('mouseenter', () => rect.setAttribute('fill', isActive ? '#0F6E56' : '#D6D2C3'));
+    g.addEventListener('mouseleave', () => rect.setAttribute('fill', isActive ? '#0F6E56' : '#E4E1D6'));
+
+    svg.appendChild(g);
+  });
+
+  container.appendChild(svg);
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => drawSankey(STAGES[stageIdx].node, STAGES[stageIdx].edges), 200);
+});
+
+// ---------- stepper ----------
+let stageIdx = 0;
+let autoplayTimer = null;
+
+const dotsEl = document.getElementById('dots');
+STAGES.forEach((s,i)=>{
+  const d = document.createElement('button');
+  d.className = 'dot' + (i===0?' active':'');
+  d.title = s.title;
+  d.onclick = ()=>{ stageIdx = i; stopAutoplay(); render(); };
+  dotsEl.appendChild(d);
+});
+document.getElementById('prevBtn').onclick = ()=>{ stopAutoplay(); if(stageIdx>0){ stageIdx--; render(); } };
+document.getElementById('nextBtn').onclick = ()=>{ stopAutoplay(); if(stageIdx<STAGES.length-1){ stageIdx++; render(); } };
+
+const playBtn = document.getElementById('playBtn');
+playBtn.onclick = ()=>{
+  if(autoplayTimer){ stopAutoplay(); return; }
+  playBtn.textContent = '⏸ pause';
+  autoplayTimer = setInterval(()=>{
+    if(stageIdx < STAGES.length-1){ stageIdx++; render(); }
+    else { stopAutoplay(); }
+  }, 1900);
+};
+function stopAutoplay(){
+  if(autoplayTimer){ clearInterval(autoplayTimer); autoplayTimer = null; playBtn.textContent = '▶ play'; }
+}
+
+function render(){
+  const stage = STAGES[stageIdx];
+  document.getElementById('stageKicker').textContent = `stage ${stageIdx+1} of ${STAGES.length}`;
+  document.getElementById('stageTitle').textContent = stage.title;
+  document.getElementById('stageFormula').textContent = stage.formula;
+  document.getElementById('stageNote').textContent = stage.note;
+
+  const matricesEl = document.getElementById('matrices');
+  matricesEl.innerHTML = '';
+  stage.matrices.forEach(m=>{
+    const block = document.createElement('div');
+    block.className = 'matrix-block';
+    const label = document.createElement('div');
+    label.className = 'matrix-label';
+    label.textContent = m.label;
+    block.appendChild(label);
+    if(m.shape){
+      const shape = document.createElement('div');
+      shape.className = 'matrix-shape';
+      shape.textContent = m.shape;
+      block.appendChild(shape);
+    }
+    block.appendChild(renderMatrixTable(m));
+    matricesEl.appendChild(block);
+  });
+
+  [...dotsEl.children].forEach((d,i)=>d.classList.toggle('active', i===stageIdx));
+  document.getElementById('prevBtn').disabled = stageIdx===0;
+  document.getElementById('nextBtn').disabled = stageIdx===STAGES.length-1;
+
+  drawSankey(stage.node, stage.edges);
+}
+
+render();
+</script>
+</body>
+</html>
