@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How LLMs work — an interactive field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6F2;
+  --panel:#FFFFFF;
+  --ink:#1B1B18;
+  --ink-soft:#5B5A54;
+  --ink-faint:#94938B;
+  --line:#DEDCD3;
+  --line-strong:#C7C5B9;
+  --accent:#0F6E56;      /* teal - active/attended */
+  --accent-soft:#DCEFE7;
+  --accent-2:#A3401F;    /* clay - warning/high-weight */
+  --accent-2-soft:#F5E2D9;
+  --amber:#8A5A0B;
+  --amber-soft:#F6E9D3;
+  --radius:10px;
+  --serif:'Newsreader', Georgia, serif;
+  --sans:'Inter', -apple-system, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-soft);}
+
+/* ---------- top nav ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(247,246,242,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:960px; margin:0 auto;
+  display:flex; align-items:center; gap:18px;
+  padding:14px 20px;
+  overflow-x:auto;
+}
+.brand{
+  font-family:var(--serif); font-weight:600; font-size:16px;
+  white-space:nowrap; color:var(--ink);
+  text-decoration:none;
+  padding-right:8px; border-right:1px solid var(--line);
+}
+.navlinks{display:flex; gap:2px; white-space:nowrap;}
+.navlinks a{
+  font-size:12.5px; color:var(--ink-soft); text-decoration:none;
+  padding:6px 10px; border-radius:999px; font-family:var(--mono);
+}
+.navlinks a:hover{background:var(--accent-soft); color:var(--accent);}
+
+/* ---------- hero ---------- */
+.hero{
+  max-width:960px; margin:0 auto; padding:56px 20px 32px;
+}
+.eyebrow{
+  font-family:var(--mono); font-size:12px; letter-spacing:0.06em;
+  color:var(--accent); text-transform:uppercase; margin:0 0 14px;
+}
+h1.title{
+  font-family:var(--serif); font-weight:600; font-style:italic;
+  font-size:clamp(32px,5vw,48px); line-height:1.08; margin:0 0 18px; max-width:14ch;
+}
+.hero p.sub{
+  font-size:16px; color:var(--ink-soft); max-width:56ch; margin:0;
+}
+
+/* ---------- hero live demo ---------- */
+.hero-demo{
+  margin-top:32px; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--panel); padding:20px;
+}
+.hero-demo label{
+  font-family:var(--mono); font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em;
+}
+#heroInput{
+  width:100%; margin-top:8px; padding:10px 12px; font-size:15px;
+  font-family:var(--mono); border:1px solid var(--line-strong); border-radius:8px;
+  background:var(--bg); color:var(--ink);
+}
+#heroInput:focus{outline:2px solid var(--accent); outline-offset:1px;}
+.hero-flow{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:16px;}
+.hero-stage{font-family:var(--mono); font-size:11px; color:var(--ink-faint); text-transform:uppercase;}
+#tokenChips{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+.chip{
+  font-family:var(--mono); font-size:13px; padding:4px 9px; border-radius:6px;
+  background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent);
+  cursor:pointer; transition:transform .1s;
+}
+.chip:hover{transform:translateY(-1px);}
+.chip.active{background:var(--accent); color:#fff;}
+.embed-row{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+.embed-vec{display:flex; gap:2px; align-items:flex-end; height:34px;}
+.embed-bar{width:4px; background:var(--ink-faint); border-radius:1px;}
+.embed-label{font-family:var(--mono); font-size:10px; color:var(--ink-faint); margin-top:3px;}
+
+/* ---------- sections ---------- */
+section.block{
+  max-width:960px; margin:0 auto; padding:52px 20px 12px;
+}
+.sec-head{
+  display:flex; align-items:baseline; gap:12px; margin-bottom:6px;
+}
+.sec-num{
+  font-family:var(--mono); font-size:13px; color:var(--accent);
+}
+h2.sec-title{
+  font-family:var(--serif); font-weight:600; font-size:26px; margin:0;
+}
+.sec-desc{
+  color:var(--ink-soft); font-size:14.5px; margin:6px 0 26px; max-width:64ch;
+}
+hr.rule{border:none; border-top:1px solid var(--line); margin:10px 0 26px;}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+@media(max-width:760px){
+  .grid2,.grid3,.grid4{grid-template-columns:1fr;}
+}
+
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px;
+}
+.card h3{font-size:14.5px; font-weight:600; margin:0 0 4px; font-family:var(--sans);}
+.card .cap{font-size:12px; color:var(--ink-faint); margin:0 0 14px;}
+.card .note{font-size:12.5px; color:var(--ink-soft); margin-top:12px;}
+
+.formula{
+  font-family:var(--mono); font-size:14px; background:var(--bg); border:1px solid var(--line);
+  border-radius:8px; padding:12px 14px; overflow-x:auto; color:var(--ink);
+}
+.mini-flow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-family:var(--mono); font-size:12.5px;}
+.mini-flow .box{border:1px solid var(--line-strong); border-radius:6px; padding:6px 9px; background:var(--bg);}
+.mini-flow .arrow{color:var(--ink-faint);}
+
+/* qkv diagram */
+.qkv-wrap{display:flex; flex-direction:column; align-items:center; gap:10px;}
+.qkv-top{border:1px solid var(--line-strong); border-radius:8px; padding:8px 14px; font-family:var(--mono); font-size:13px; background:var(--bg);}
+.qkv-arrows{display:flex; gap:40px; font-size:20px; color:var(--ink-faint);}
+.qkv-row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.qkv-box{border:1px solid var(--accent); border-radius:8px; padding:8px 12px; background:var(--accent-soft); color:var(--accent); font-family:var(--mono); font-size:13px; text-align:center; min-width:90px;}
+.qkv-cap{font-size:11px; color:var(--ink-faint); text-align:center; max-width:120px;}
+
+/* attention grid */
+.attn-controls{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+.pill-btn{
+  font-family:var(--mono); font-size:12px; padding:6px 12px; border-radius:999px;
+  border:1px solid var(--line-strong); background:var(--panel); color:var(--ink-soft); cursor:pointer;
+}
+.pill-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+.attn-grid-wrap{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;}
+#attnGrid{display:grid; gap:3px;}
+.attn-cell{width:22px; height:22px; border-radius:3px; background:var(--line);}
+.attn-legend{font-size:12px; color:var(--ink-soft); max-width:260px;}
+
+/* transformer stack */
+.stack{display:flex; flex-direction:column; gap:8px; align-items:stretch; max-width:420px; margin:0 auto;}
+.stack .layer{
+  border:1px solid var(--line-strong); border-radius:8px; padding:10px 14px;
+  background:var(--panel); font-family:var(--mono); font-size:12.5px; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.stack .layer:hover{border-color:var(--accent); background:var(--accent-soft);}
+.stack .layer .tag{color:var(--ink-faint); font-size:11px;}
+.stack .rep{text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin:2px 0;}
+#layerDetail{margin-top:14px; font-size:13px; color:var(--ink-soft); min-height:20px;}
+
+/* training pipeline */
+.pipe{display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;}
+.pipe-step{
+  flex:1 1 0; min-width:150px; border:1px solid var(--line); border-radius:8px; padding:14px;
+  background:var(--panel); cursor:pointer; position:relative;
+}
+.pipe-step.on{border-color:var(--accent); background:var(--accent-soft);}
+.pipe-step h4{margin:0 0 4px; font-size:13.5px;}
+.pipe-step p{margin:0; font-size:12px; color:var(--ink-soft);}
+.pipe-arrow{align-self:center; color:var(--ink-faint); font-family:var(--mono);}
+#pipeDetail{margin-top:16px; border-top:1px solid var(--line); padding-top:14px; font-size:13.5px; color:var(--ink-soft); min-height:40px;}
+
+/* decoding */
+.dec-controls{display:flex; gap:24px; flex-wrap:wrap; margin-bottom:18px;}
+.slider-group{flex:1; min-width:200px;}
+.slider-group label{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-bottom:6px;}
+input[type=range]{width:100%; accent-color:var(--accent);}
+#decBars{display:flex; align-items:flex-end; gap:8px; height:140px; border-bottom:1px solid var(--line); padding:0 4px;}
+.dec-bar-col{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;}
+.dec-bar{width:100%; background:var(--line-strong); border-radius:4px 4px 0 0; transition:height .2s, background .2s;}
+.dec-bar.picked{background:var(--accent);}
+.dec-tok{font-family:var(--mono); font-size:11px; color:var(--ink-soft);}
+.dec-pct{font-family:var(--mono); font-size:10px; color:var(--ink-faint);}
+.sample-btn{
+  margin-top:14px; font-family:var(--mono); font-size:12.5px; padding:8px 16px;
+  background:var(--ink); color:#fff; border:none; border-radius:8px; cursor:pointer;
+}
+.sample-btn:hover{background:var(--accent);}
+#sampleOut{margin-top:10px; font-family:var(--mono); font-size:13px; color:var(--accent); min-height:18px;}
+
+/* scaling */
+.scale-wrap{display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;}
+svg.scalesvg{max-width:100%; height:auto;}
+.ctx-bar-track{width:100%; height:14px; background:var(--line); border-radius:999px; overflow:hidden; margin-top:10px;}
+.ctx-bar-fill{height:100%; background:var(--accent); width:6%;}
+
+/* variants */
+.variant-card .diagram{height:64px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+
+footer{
+  max-width:960px; margin:0 auto; padding:40px 20px 60px;
+  color:var(--ink-faint); font-size:12.5px; border-top:1px solid var(--line); margin-top:40px;
+}
+a.inline-link{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">field guide</a>
+    <div class="navlinks">
+      <a href="#tokenization">01 tokens</a>
+      <a href="#attention">02 attention</a>
+      <a href="#patterns">03 patterns</a>
+      <a href="#architecture">04 architecture</a>
+      <a href="#families">05 encoder/decoder</a>
+      <a href="#training">06 training</a>
+      <a href="#decoding">07 decoding</a>
+      <a href="#scaling">08 scaling</a>
+      <a href="#efficient">09 efficient attn</a>
+    </div>
+  </div>
+</div>
+
+<div id="top"></div>
+<div class="hero">
+  <p class="eyebrow">An interactive field guide</p>
+  <h1 class="title">How a large language model actually works</h1>
+  <p class="sub">Eight stops, in the order a sentence actually travels through a model: split into tokens, looked up as vectors, mixed by attention, stacked into layers, shaped by training, and finally decoded back into words.</p>
+
+  <div class="hero-demo">
+    <label for="heroInput">Type a sentence to trace through the pipeline</label>
+    <input id="heroInput" type="text" value="the cat sat on the mat" spellcheck="false">
+    <div class="hero-flow">
+      <div>
+        <div class="hero-stage">tokens</div>
+        <div id="tokenChips"></div>
+      </div>
+    </div>
+    <div class="hero-flow">
+      <div style="width:100%">
+        <div class="hero-stage">embedding of selected token (illustrative, not real weights)</div>
+        <div class="embed-row" id="embedRow"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 01 TOKENIZATION -->
+<section class="block" id="tokenization">
+  <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Tokenization &amp; embeddings</h2></div>
+  <p class="sec-desc">Models don't read letters or words — they read integers. A tokenizer chops text into a fixed vocabulary of chunks, then each chunk is looked up as a vector that encodes its meaning.</p>
+  <hr class="rule">
+  <div class="grid2">
+    <div class="card">
+      <h3>Text → tokens</h3>
+      <p class="cap">Subword tokenizers (BPE, WordPiece) split rare words into pieces so the vocabulary stays small</p>
+      <div class="mini-flow">
+        <div class="box">"unbelievable"</div>
+        <span class="arrow">→</span>
+        <div class="box">un</div><div class="box">believ</div><div class="box">able</div>
+      </div>
+      <p class="note">Common words stay whole; rare or made-up words get split into familiar fragments. This is why a model can handle words it never saw during training.</p>
+    </div>
+    <div class="card">
+      <h3>Token → embedding</h3>
+      <p class="cap">Each token ID indexes into a lookup table of learned vectors</p>
+      <div class="formula">embedding = LookupTable[token_id]<br>+ PositionEncoding[position]</div>
+      <p class="note">The position encoding is added because attention itself has no sense of order — without it, "dog bites man" and "man bites dog" would look identical.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 02 ATTENTION -->
+<section class="block" id="attention">
+  <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">The core idea: attention</h2></div>
+  <p class="sec-desc">Each token asks what matters, scores every candidate, then blends their information.</p>
+  <hr class="rule">
+  <div class="grid2">
+    <div class="card">
+      <h3>Query, key, value</h3>
+      <p class="cap">Q and K decide relevance; V carries the content</p>
+      <div class="qkv-wrap">
+        <div class="qkv-top">token state x</div>
+        <div class="qkv-arrows"><span>↙</span><span>↓</span><span>↘</span></div>
+        <div class="qkv-row">
+          <div><div class="qkv-box">Q = xW_Q</div><div class="qkv-cap">what am I looking for?</div></div>
+          <div><div class="qkv-box">K = xW_K</div><div class="qkv-cap">what do I match on?</div></div>
+          <div><div class="qkv-box">V = xW_V</div><div class="qkv-cap">what information do I provide?</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Scaled dot-product attention</h3>
+      <p class="cap">Similarity, scaled, normalized, then blended</p>
+      <div class="formula">Attention(Q,K,V) =<br>&nbsp;&nbsp;softmax( QK<sup>T</sup> / √d_k ) · V</div>
+      <p class="note">Dividing by √d_k keeps scores from growing too large as dimensions increase — without it, softmax would saturate and gradients would vanish.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Try it: click a token to make it the query</h3>
+    <p class="cap">Bar height = how much attention that query pays to each key. This uses a simple illustrative similarity score, not a trained model.</p>
+    <div id="attnDemo"></div>
+  </div>
+</section>
+
+<!-- 03 PATTERNS -->
+<section class="block" id="patterns">
+  <div class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">Attention patterns</h2></div>
+  <p class="sec-desc">Rows are queries, columns are keys. Which cells are allowed to be non-zero defines the pattern.</p>
+  <hr class="rule">
+  <div class="attn-controls" id="patternButtons"></div>
+  <div class="attn-grid-wrap">
+    <div id="attnGrid"></div>
+    <div class="attn-legend" id="patternLegend"></div>
+  </div>
+</section>
+
+<!-- 04 ARCHITECTURE -->
+<section class="block" id="architecture">
+  <div class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">Transformer architecture</h2></div>
+  <p class="sec-desc">A model is this block stacked N times — 32, 80, sometimes over 100 — with a residual connection carrying information past every layer.</p>
+  <hr class="rule">
+  <div class="grid2">
+    <div class="card">
+      <h3>The stack</h3>
+      <p class="cap">Click a layer to see what it does</p>
+      <div class="stack" id="stack"></div>
+      <div id="layerDetail"></div>
+    </div>
+    <div class="card">
+      <h3>Multi-head attention</h3>
+      <p class="cap">Several attention views run in parallel, each with its own projections</p>
+      <div class="mini-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="mini-flow"><div class="box">Q, K, V</div><span class="arrow">→</span><div class="box">head 1</div><div class="box">head 2</div><div class="box">head h</div></div>
+        <div class="mini-flow" style="padding-left:20px;"><span class="arrow">→</span><div class="box">concatenate</div><span class="arrow">→</span><div class="box">× W₀</div></div>
+      </div>
+      <p class="note">One head might learn to track subject-verb agreement, another might track coreference. Splitting into heads lets these specializations coexist without interfering.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 MODEL FAMILIES -->
+<section class="block" id="families">
+  <div class="sec-head"><span class="sec-num">05</span><h2 class="sec-title">Encoder-only, decoder-only, encoder-decoder</h2></div>
+  <p class="sec-desc">The block from the last section can be wired together three different ways, depending on whether the model needs to understand text, generate text, or transform one sequence into another.</p>
+  <hr class="rule">
+  <div class="grid3">
+    <div class="card">
+      <h3>Encoder-only</h3>
+      <p class="cap">Bidirectional attention · outputs one vector per input token</p>
+      <div class="mini-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="mini-flow"><div class="box">input tokens</div><span class="arrow">→</span><div class="box">bidirectional encoder × N</div></div>
+        <div class="mini-flow" style="padding-left:20px;"><span class="arrow">→</span><div class="box">contextual embedding per token</div></div>
+      </div>
+      <p class="note"><strong>Attention:</strong> full square — every token sees every token.<br><strong>Trained on:</strong> masked language modeling (guess the missing word).<br><strong>Good at:</strong> classification, search &amp; retrieval embeddings, named entity recognition.<br><strong>Examples:</strong> BERT, RoBERTa.</p>
+    </div>
+    <div class="card">
+      <h3>Decoder-only</h3>
+      <p class="cap">Causal attention · generates one token at a time</p>
+      <div class="mini-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="mini-flow"><div class="box">tokens so far</div><span class="arrow">→</span><div class="box">causal decoder × N</div></div>
+        <div class="mini-flow" style="padding-left:20px;"><span class="arrow">→</span><div class="box">next token</div><span class="arrow">↻ fed back in</span></div>
+      </div>
+      <p class="note"><strong>Attention:</strong> lower triangle — each token sees itself and the past only.<br><strong>Trained on:</strong> next-token prediction over raw text.<br><strong>Good at:</strong> open-ended generation, chat, code, reasoning.<br><strong>Examples:</strong> GPT, Llama, Claude — almost every modern general-purpose LLM.</p>
+    </div>
+    <div class="card">
+      <h3>Encoder-decoder</h3>
+      <p class="cap">Bidirectional encoder + causal decoder, linked by cross-attention</p>
+      <div class="mini-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="mini-flow"><div class="box">source text</div><span class="arrow">→</span><div class="box">encoder</div></div>
+        <div class="mini-flow" style="padding-left:20px;"><span class="arrow">↘ cross-attention</span></div>
+        <div class="mini-flow"><div class="box">target so far</div><span class="arrow">→</span><div class="box">decoder</div><span class="arrow">→</span><div class="box">next token</div></div>
+      </div>
+      <p class="note"><strong>Attention:</strong> encoder is a full square; decoder is a lower triangle that also cross-attends to every encoder position.<br><strong>Trained on:</strong> sequence-to-sequence tasks — one text in, a different text out.<br><strong>Good at:</strong> translation, summarization, speech-to-text.<br><strong>Examples:</strong> the original 2017 Transformer, T5, BART, Whisper.</p>
+    </div>
+  </div>
+  <p class="sec-desc" style="margin-top:18px; font-size:13px;">Decoder-only won out for general-purpose assistants because a single causal stack can absorb almost any task as plain text, with no separate encoder needed. Encoder-decoder still wins when input and output are structurally different in kind, like audio in and text out.</p>
+</section>
+
+<!-- 06 TRAINING -->
+<section class="block" id="training">
+  <div class="sec-head"><span class="sec-num">06</span><h2 class="sec-title">The training pipeline</h2></div>
+  <p class="sec-desc">A model passes through distinct stages before it ever answers a question. Click each stage.</p>
+  <hr class="rule">
+  <div class="pipe" id="pipeline"></div>
+  <div id="pipeDetail">Click a stage above to read what happens there.</div>
+</section>
+
+<!-- 07 DECODING -->
+<section class="block" id="decoding">
+  <div class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">Inference &amp; decoding</h2></div>
+  <p class="sec-desc">The model outputs a probability for every token in its vocabulary. Temperature and top-p decide how that distribution turns into an actual choice.</p>
+  <hr class="rule">
+  <div class="card">
+    <div class="dec-controls">
+      <div class="slider-group">
+        <label>Temperature <span id="tempVal">0.7</span></label>
+        <input type="range" id="tempSlider" min="0.1" max="2" step="0.1" value="0.7">
+      </div>
+      <div class="slider-group">
+        <label>Top-p (nucleus) <span id="toppVal">0.9</span></label>
+        <input type="range" id="toppSlider" min="0.1" max="1" step="0.05" value="0.9">
+      </div>
+    </div>
+    <div id="decBars"></div>
+    <button class="sample-btn" id="sampleBtn">sample next token</button>
+    <div id="sampleOut"></div>
+    <p class="note">Low temperature flattens toward the top candidate (predictable, safe). High temperature flattens the distribution (more variety, more risk of nonsense). Top-p cuts off the long tail entirely before sampling.</p>
+  </div>
+</section>
+
+<!-- 08 SCALING -->
+<section class="block" id="scaling">
+  <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Scaling laws &amp; context</h2></div>
+  <p class="sec-desc">Loss falls predictably as compute, data, and parameters grow together — and separately, every extra token in the context costs attention quadratically.</p>
+  <hr class="rule">
+  <div class="grid2">
+    <div class="card">
+      <h3>Loss vs. compute</h3>
+      <p class="cap">Log-log scale: a straight line means a power law</p>
+      <div class="scale-wrap">
+        <svg class="scalesvg" viewBox="0 0 260 160" role="img" aria-label="Loss decreasing as a power law with compute">
+          <line x1="30" y1="10" x2="30" y2="140" stroke="#C7C5B9" stroke-width="1"/>
+          <line x1="30" y1="140" x2="250" y2="140" stroke="#C7C5B9" stroke-width="1"/>
+          <path d="M30,20 C90,55 150,95 250,130" fill="none" stroke="#0F6E56" stroke-width="2"/>
+          <text x="8" y="20" font-size="9" fill="#94938B" font-family="monospace">loss</text>
+          <text x="228" y="152" font-size="9" fill="#94938B" font-family="monospace">compute</text>
+        </svg>
+      </div>
+      <p class="note">This predictability is what lets labs decide how big to train a model before spending the compute — small-scale runs forecast the large-scale result.</p>
+    </div>
+    <div class="card">
+      <h3>Context window</h3>
+      <p class="cap">Attention cost grows with the square of sequence length</p>
+      <div id="ctxDemo">
+        <div class="mini-flow"><span id="ctxLabel">4K tokens</span></div>
+        <div class="ctx-bar-track"><div class="ctx-bar-fill" id="ctxFill"></div></div>
+        <input type="range" id="ctxSlider" min="0" max="4" step="1" value="0" style="width:100%; margin-top:10px;">
+        <p class="note" id="ctxNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 EFFICIENT ATTENTION -->
+<section class="block" id="efficient">
+  <div class="sec-head"><span class="sec-num">09</span><h2 class="sec-title">Efficient attention variants</h2></div>
+  <p class="sec-desc">Standard attention forms an n×n score matrix — O(n²) compute and memory. These variants reduce which pairs are computed, change the underlying math, or execute the same math more efficiently.</p>
+  <hr class="rule">
+  <div class="grid3">
+    <div class="card variant-card">
+      <h3>Sparse attention</h3>
+      <p class="cap">Compute only selected Q-K pairs</p>
+      <div class="diagram" id="sparseDiagram"></div>
+      <p class="note">Local windows plus a few global tokens. Misses some long-range links in exchange for O(n·w) cost. See: Longformer, BigBird.</p>
+    </div>
+    <div class="card variant-card">
+      <h3>Linear attention</h3>
+      <p class="cap">Reorders a kernelized approximation</p>
+      <div class="formula" style="font-size:11px;">φ(Q)(φ(K)ᵀV)</div>
+      <p class="note">Avoids ever materializing the full QKᵀ matrix — often O(n). Quality depends heavily on the choice of kernel φ.</p>
+    </div>
+    <div class="card variant-card">
+      <h3>FlashAttention</h3>
+      <p class="cap">Same exact result, memory-aware execution</p>
+      <div class="mini-flow" style="justify-content:center;"><div class="box">Q</div><span class="arrow">→</span><div class="box">K,V</div><span class="arrow">→</span><div class="box">tile</div></div>
+      <p class="note">Tiles the computation through fast on-chip memory. Still O(n²) math, but with far less memory traffic — exact, just faster.</p>
+    </div>
+  </div>
+  <p class="sec-desc" style="margin-top:18px; font-size:13px;">Sparse changes which pairs exist; linear changes the formulation; FlashAttention changes only the implementation.</p>
+</section>
+
+<footer>
+  Built as a self-contained, single-file explainer — no build step, no dependencies beyond the fonts above. Diagrams are illustrative approximations meant to build intuition, not literal model internals.
+</footer>
+
+<script>
+// ---------------- utilities ----------------
+function hash(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function seededRand(seed){
+  let s = seed % 2147483647;
+  if(s<=0) s += 2147483646;
+  return function(){ s = (s*16807) % 2147483647; return (s-1)/2147483646; };
+}
+function simpleTokenize(text){
+  return text.trim().split(/\s+/).filter(Boolean);
+}
+
+// ---------------- hero demo ----------------
+const heroInput = document.getElementById('heroInput');
+const tokenChips = document.getElementById('tokenChips');
+const embedRow = document.getElementById('embedRow');
+let heroTokens = [];
+let heroSelected = 0;
+
+function renderHero(){
+  heroTokens = simpleTokenize(heroInput.value || '');
+  tokenChips.innerHTML = '';
+  heroTokens.forEach((tok, i)=>{
+    const c = document.createElement('div');
+    c.className = 'chip' + (i===heroSelected ? ' active' : '');
+    c.textContent = tok;
+    c.onclick = ()=>{ heroSelected = i; renderHero(); };
+    tokenChips.appendChild(c);
+  });
+  renderEmbedding();
+}
+function renderEmbedding(){
+  embedRow.innerHTML = '';
+  const tok = heroTokens[heroSelected] || '';
+  const rnd = seededRand(hash(tok) || 1);
+  const vec = document.createElement('div');
+  vec.className = 'embed-vec';
+  for(let i=0;i<24;i++){
+    const bar = document.createElement('div');
+    bar.className = 'embed-bar';
+    const h = 4 + Math.round(rnd()*30);
+    bar.style.height = h+'px';
+    bar.style.background = h>22 ? '#0F6E56' : (h>12 ? '#94938B' : '#DEDCD3');
+    vec.appendChild(bar);
+  }
+  const wrap = document.createElement('div');
+  wrap.appendChild(vec);
+  const label = document.createElement('div');
+  label.className = 'embed-label';
+  label.textContent = tok ? '"'+tok+'" → 24-dim vector (illustrative)' : '';
+  wrap.appendChild(label);
+  embedRow.appendChild(wrap);
+}
+heroInput.addEventListener('input', renderHero);
+renderHero();
+
+// ---------------- attention demo (section 02) ----------------
+const attnDemo = document.getElementById('attnDemo');
+function renderAttnDemo(){
+  attnDemo.innerHTML = '';
+  const tokens = heroTokens.length ? heroTokens : simpleTokenize('the cat sat on the mat');
+  const chipRow = document.createElement('div');
+  chipRow.className = 'hero-flow';
+  const barsWrap = document.createElement('div');
+  barsWrap.style.marginTop = '14px';
+  barsWrap.style.display = 'flex';
+  barsWrap.style.gap = '8px';
+  barsWrap.style.alignItems = 'flex-end';
+  barsWrap.style.height = '90px';
+
+  let queryIdx = 0;
+
+  function draw(){
+    chipRow.innerHTML = '';
+    tokens.forEach((t,i)=>{
+      const c = document.createElement('div');
+      c.className = 'chip' + (i===queryIdx?' active':'');
+      c.textContent = t;
+      c.onclick = ()=>{ queryIdx = i; draw(); };
+      chipRow.appendChild(c);
+    });
+    barsWrap.innerHTML = '';
+    const scores = tokens.map((t,i)=>{
+      const s = hash(tokens[queryIdx]+'|'+t) % 100;
+      const base = i===queryIdx ? 70 : s;
+      return base;
+    });
+    const max = Math.max(...scores);
+    const sum = scores.reduce((a,b)=>a+Math.exp((b-max)/20),0);
+    tokens.forEach((t,i)=>{
+      const weight = Math.exp((scores[i]-max)/20)/sum;
+      const col = document.createElement('div');
+      col.style.display='flex'; col.style.flexDirection='column'; col.style.alignItems='center'; col.style.flex='1'; col.style.gap='4px';
+      const bar = document.createElement('div');
+      bar.style.width='100%';
+      bar.style.height = Math.round(weight*70)+18+'px';
+      bar.style.borderRadius='4px 4px 0 0';
+      bar.style.background = i===queryIdx ? '#0F6E56' : '#A3401F';
+      bar.style.opacity = 0.35 + weight*1.4;
+      const lab = document.createElement('div');
+      lab.style.fontFamily='var(--mono)'; lab.style.fontSize='10px'; lab.style.color='#5B5A54';
+      lab.textContent = t;
+      const pct = document.createElement('div');
+      pct.style.fontFamily='var(--mono)'; pct.style.fontSize='9px'; pct.style.color='#94938B';
+      pct.textContent = Math.round(weight*100)+'%';
+      col.appendChild(bar); col.appendChild(lab); col.appendChild(pct);
+      barsWrap.appendChild(col);
+    });
+  }
+  draw();
+  attnDemo.appendChild(chipRow);
+  attnDemo.appendChild(barsWrap);
+}
+renderAttnDemo();
+heroInput.addEventListener('input', renderAttnDemo);
+
+// ---------------- section 03: patterns ----------------
+const patternButtons = document.getElementById('patternButtons');
+const attnGrid = document.getElementById('attnGrid');
+const patternLegend = document.getElementById('patternLegend');
+const N = 8;
+const patterns = {
+  bidirectional: { label:'Bidirectional', desc:'Every token sees every token. Used by encoder models for whole-input understanding.',
+    fn:(r,c)=>true },
+  causal: { label:'Causal', desc:'Each token sees itself and the past. Used by decoder models for next-token prediction.',
+    fn:(r,c)=>c<=r },
+  local: { label:'Local window', desc:'Each row sees only nearby positions. Cuts distant links; useful when nearby context matters most.',
+    fn:(r,c)=>Math.abs(r-c)<=2 },
+  strided: { label:'Sparse (strided)', desc:'Each row sees local neighbors plus a few fixed global positions. Typical of Longformer / BigBird style patterns.',
+    fn:(r,c)=>Math.abs(r-c)<=1 || c===0 || c===N-1 }
+};
+let currentPattern = 'bidirectional';
+Object.keys(patterns).forEach(key=>{
+  const b = document.createElement('button');
+  b.className = 'pill-btn' + (key===currentPattern?' active':'');
+  b.textContent = patterns[key].label;
+  b.onclick = ()=>{ currentPattern = key; drawPattern(); };
+  patternButtons.appendChild(b);
+});
+function drawPattern(){
+  [...patternButtons.children].forEach((b,i)=>{
+    b.classList.toggle('active', Object.keys(patterns)[i]===currentPattern);
+  });
+  attnGrid.style.gridTemplateColumns = `repeat(${N}, 22px)`;
+  attnGrid.innerHTML = '';
+  const p = patterns[currentPattern];
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      const cell = document.createElement('div');
+      cell.className = 'attn-cell';
+      if(p.fn(r,c)){
+        cell.style.background = r===c ? '#0F6E56' : '#1B1B18';
+      }
+      attnGrid.appendChild(cell);
+    }
+  }
+  patternLegend.innerHTML = `<strong style="font-size:13px;">${p.label}</strong><br><br>${p.desc}<br><br><span style="color:#94938B; font-family:var(--mono); font-size:11px;">rows = queries · columns = keys · dark = visible</span>`;
+}
+drawPattern();
+
+// ---------------- section 04: architecture ----------------
+const stackEl = document.getElementById('stack');
+const layerDetail = document.getElementById('layerDetail');
+const layers = [
+  {name:'Token + position embedding', tag:'input', detail:'Every token ID and its position are converted to vectors and summed. This is the only place raw text enters the numeric pipeline.'},
+  {name:'Layer norm', tag:'× N', detail:'Rescales activations to stabilize training. Applied before (pre-norm) or after (post-norm) the sublayers, depending on the architecture.'},
+  {name:'Multi-head self-attention', tag:'× N', detail:'Tokens exchange information with each other. This is the only sublayer where tokens interact — everything else acts on each token independently.'},
+  {name:'Residual connection', tag:'× N', detail:'The block\'s input is added back to its output. This lets gradients flow through very deep stacks without vanishing.'},
+  {name:'Feed-forward network', tag:'× N', detail:'A two-layer MLP applied to each token independently, usually 4× wider than the model dimension. This is where most of the parameters live.'},
+  {name:'Final layer norm + output head', tag:'output', detail:'Projects the final hidden state to a probability over the entire vocabulary — one number per possible next token.'}
+];
+layers.forEach((l,i)=>{
+  const row = document.createElement('div');
+  row.className = 'layer';
+  row.innerHTML = `<span>${l.name}</span><span class="tag">${l.tag}</span>`;
+  row.onclick = ()=>{ layerDetail.textContent = l.detail; };
+  stackEl.appendChild(row);
+  if(i===2 || i===4){
+    const rep = document.createElement('div');
+    rep.className = 'rep';
+    rep.textContent = '⟲ repeats N times per block';
+    // only add once visually meaningful, skip duplicate spam
+  }
+});
+layerDetail.textContent = 'Click a layer above to see what it does.';
+
+// ---------------- section 05: training pipeline ----------------
+const pipeline = document.getElementById('pipeline');
+const pipeDetail = document.getElementById('pipeDetail');
+const stages = [
+  {name:'Pretraining', short:'Predict the next token across a huge, broad corpus.', detail:'The model reads trillions of tokens of text and code, learning to predict the next token. This is where nearly all of the model\'s knowledge and language ability come from. It costs the vast majority of total compute and produces a "base model" — fluent, but not yet an obedient assistant.'},
+  {name:'Supervised fine-tuning', short:'Learn from curated instruction-response pairs.', detail:'The base model is fine-tuned on examples of good instruction-following: a prompt paired with a high-quality human- or model-written response. This teaches the model the assistant format and how to actually follow directions, using far less data than pretraining.'},
+  {name:'Preference optimization', short:'RLHF or DPO — learn from human preference.', detail:'Humans (or a trained reward model) rank multiple candidate responses. The model is optimized to produce outputs closer to the preferred ones — via reinforcement learning (RLHF, PPO) or a simpler direct method (DPO). This is where tone, helpfulness, and refusal behavior are shaped.'},
+  {name:'Evaluation & red-teaming', short:'Stress-test before release.', detail:'The model is tested against benchmarks for capability and adversarial prompts for safety. Issues found here often loop back into another round of fine-tuning before the model ships.'}
+];
+stages.forEach((s,i)=>{
+  const step = document.createElement('div');
+  step.className = 'pipe-step';
+  step.innerHTML = `<h4>${i+1}. ${s.name}</h4><p>${s.short}</p>`;
+  step.onclick = ()=>{
+    [...pipeline.children].forEach(c=>c.classList.remove('on'));
+    step.classList.add('on');
+    pipeDetail.textContent = s.detail;
+  };
+  pipeline.appendChild(step);
+  if(i < stages.length-1){
+    const arrow = document.createElement('div');
+    arrow.className = 'pipe-arrow';
+    arrow.textContent = '→';
+    pipeline.appendChild(arrow);
+  }
+});
+
+// ---------------- section 06: decoding ----------------
+const tempSlider = document.getElementById('tempSlider');
+const toppSlider = document.getElementById('toppSlider');
+const tempVal = document.getElementById('tempVal');
+const toppVal = document.getElementById('toppVal');
+const decBars = document.getElementById('decBars');
+const sampleOut = document.getElementById('sampleOut');
+const vocab = [
+  {tok:'mat', logit:4.2}, {tok:'floor', logit:3.1}, {tok:'sofa', logit:2.4},
+  {tok:'roof', logit:1.6}, {tok:'moon', logit:0.6}, {tok:'car', logit:-0.4}
+];
+function softmax(logits, temp){
+  const scaled = logits.map(l=>l/temp);
+  const max = Math.max(...scaled);
+  const exps = scaled.map(l=>Math.exp(l-max));
+  const sum = exps.reduce((a,b)=>a+b,0);
+  return exps.map(e=>e/sum);
+}
+function applyTopP(items, p){
+  const sorted = [...items].sort((a,b)=>b.prob-a.prob);
+  let cum = 0;
+  const kept = new Set();
+  for(const it of sorted){
+    if(cum >= p) break;
+    kept.add(it.tok);
+    cum += it.prob;
+  }
+  return items.map(it=> kept.has(it.tok) ? it : {...it, prob:0});
+}
+function renderDecoding(){
+  const temp = parseFloat(tempSlider.value);
+  const topp = parseFloat(toppSlider.value);
+  tempVal.textContent = temp.toFixed(1);
+  toppVal.textContent = topp.toFixed(2);
+  let probs = softmax(vocab.map(v=>v.logit), temp);
+  let items = vocab.map((v,i)=>({tok:v.tok, prob:probs[i]}));
+  items = applyTopP(items, topp);
+  const renorm = items.reduce((a,b)=>a+b.prob,0) || 1;
+  items = items.map(it=>({...it, prob: it.prob/renorm}));
+  decBars.innerHTML = '';
+  items.forEach(it=>{
+    const col = document.createElement('div');
+    col.className = 'dec-bar-col';
+    const bar = document.createElement('div');
+    bar.className = 'dec-bar';
+    bar.style.height = Math.round(it.prob*110)+'px';
+    const pct = document.createElement('div');
+    pct.className = 'dec-pct';
+    pct.textContent = Math.round(it.prob*100)+'%';
+    const lab = document.createElement('div');
+    lab.className = 'dec-tok';
+    lab.textContent = it.tok;
+    col.appendChild(pct); col.appendChild(bar); col.appendChild(lab);
+    decBars.appendChild(col);
+  });
+  decBars._items = items;
+}
+tempSlider.addEventListener('input', renderDecoding);
+toppSlider.addEventListener('input', renderDecoding);
+document.getElementById('sampleBtn').addEventListener('click', ()=>{
+  const items = decBars._items;
+  const r = Math.random();
+  let cum = 0, chosen = items[0].tok;
+  for(const it of items){ cum += it.prob; if(r<=cum){ chosen = it.tok; break; } }
+  [...decBars.children].forEach((col,i)=>{
+    col.querySelector('.dec-bar').classList.toggle('picked', items[i].tok===chosen);
+  });
+  sampleOut.textContent = '→ sampled: "'+chosen+'"';
+});
+renderDecoding();
+
+// ---------------- section 07: context ----------------
+const ctxSlider = document.getElementById('ctxSlider');
+const ctxLabel = document.getElementById('ctxLabel');
+const ctxFill = document.getElementById('ctxFill');
+const ctxNote = document.getElementById('ctxNote');
+const ctxSteps = [
+  {label:'4K tokens', pct:6, note:'A short conversation. Attention computes ~16 million score pairs.'},
+  {label:'32K tokens', pct:25, note:'A long document. Score pairs grow to ~1 billion — 64× the 4K case.'},
+  {label:'128K tokens', pct:55, note:'A small codebase. ~16 billion score pairs; this is where efficient-attention variants start to matter a lot.'},
+  {label:'1M tokens', pct:90, note:'Several novels\' worth of text. Quadratic cost makes naive attention impractical without sparsity or linear approximations.'},
+  {label:'10M tokens', pct:100, note:'Research-frontier context lengths, requiring fundamentally sub-quadratic attention to be workable at all.'}
+];
+function renderCtx(){
+  const s = ctxSteps[ctxSlider.value];
+  ctxLabel.textContent = s.label;
+  ctxFill.style.width = s.pct+'%';
+  ctxNote.textContent = s.note;
+}
+ctxSlider.addEventListener('input', renderCtx);
+renderCtx();
+
+// ---------------- section 08: sparse diagram ----------------
+const sparseDiagram = document.getElementById('sparseDiagram');
+(function(){
+  const n = 6;
+  const grid = document.createElement('div');
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = `repeat(${n}, 9px)`;
+  grid.style.gap = '2px';
+  for(let r=0;r<n;r++){
+    for(let c=0;c<n;c++){
+      const cell = document.createElement('div');
+      cell.style.width='9px'; cell.style.height='9px'; cell.style.borderRadius='2px';
+      const visible = Math.abs(r-c)<=1 || c===0 || c===n-1;
+      cell.style.background = visible ? (c===0||c===n-1 ? '#A3401F' : '#1B1B18') : '#DEDCD3';
+      grid.appendChild(cell);
+    }
+  }
+  sparseDiagram.appendChild(grid);
+})();
+</script>
+</body>
+</html>
